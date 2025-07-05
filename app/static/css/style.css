@@ -1,0 +1,78 @@
+/* General page styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 20px;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+/* Headings */
+h2, h3 {
+  color: #2c3e50;
+}
+
+/* Buttons */
+button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  margin: 5px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* Input fields */
+input[type="text"],
+input[type="file"] {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 5px 0 10px 0;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Tabs */
+.tab {
+  display: none;
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.tab-active {
+  display: block;
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+table th {
+  background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Navigation buttons spacing */
+button + button {
+  margin-left: 10px;
+}

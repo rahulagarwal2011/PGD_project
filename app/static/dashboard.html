@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>PQC Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>PQC Transaction Platform Dashboard</h2>
+
+    <div>
+        <button onclick="showTab('loadTab')">Single/Bulk Load</button>
+        <button onclick="showTab('benchmarkTab')">Benchmark Results</button>
+    </div>
+
+    <div id="loadTab">
+        <h3>Load Transaction</h3>
+        <form id="singleForm">
+            ID: <input type="number" name="id"><br>
+            Amount: <input type="number" name="amount" step="0.01"><br>
+            Time: <input type="number" name="time" step="0.01"><br>
+            Is Fraud (0/1): <input type="number" name="is_fraud"><br>
+            <button type="button" onclick="pushSingle()">Push Single</button>
+        </form>
+
+        <h4>Bulk Upload (CSV)</h4>
+        <input type="file" id="csvFile">
+        <button onclick="pushBulk()">Push Bulk</button>
+    </div>
+
+    <div id="benchmarkTab" style="display:none;">
+        <h3>Benchmark Results</h3>
+        <button onclick="loadBenchmark()">Show Results</button>
+        <div id="benchmarkResults"></div>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            document.getElementById("loadTab").style.display = tab === "loadTab" ? "block" : "none";
+            document.getElementById("benchmarkTab").style.display = tab === "benchmarkTab" ? "block" : "none";
+        }
+
+        async function pushSingle() {
+            const form = document.getElementById("singleForm");
+            const data = Object.fromEntries(new FormData(form).entries());
+            const res = await fetch("/encrypt-transaction/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            alert(await res.text());
+        }
+
+        async function pushBulk() {
+            const fileInput = document.getElementById("csvFile");
+            const file = fileInput.files[0];
+            const text = await file.text();
+            const lines = text.split("\n").slice(1);
+
+            for (const line of lines) {
+                const [id, amount, time, is_fraud] = line.split(",");
+                await fetch("/encrypt-transaction/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: parseInt(id), amount: parseFloat(amount), time: parseFloat(time), is_fraud: parseInt(is_fraud) })
+                });
+            }
+            alert("Bulk upload complete");
+        }
+
+        async function loadBenchmark() {
+            const res = await fetch("/benchmark");
+            const data = await res.json();
+            let html = "<table border='1'><tr><th>Type</th><th>Latency (ms)</th></tr>";
+            data.forEach(r => {
+                html += `<tr><td>${r.type}</td><td>${r.latency}</td></tr>`;
+            });
+            html += "</table>";
+            document.getElementById("benchmarkResults").innerHTML = html;
+        }
+    </script>
+</body>
+</html>

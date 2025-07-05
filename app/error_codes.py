@@ -2,36 +2,36 @@
 Centralized error codes for PQC Transaction Encryption API
 """
 
-# 🔒 Validation Errors
+# Validation Errors
 VALIDATION_ERROR = "VALIDATION_ERROR"
 
-# 🔒 Authentication & Authorization Errors
+# Authentication & Authorization Errors
 AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED"
 UNAUTHORIZED_ACCESS = "UNAUTHORIZED_ACCESS"
 
-# 🔒 Encryption Errors
+# Encryption Errors
 RSA_ENCRYPTION_FAILED = "RSA_ENCRYPTION_FAILED"
 PQC_ENCRYPTION_FAILED = "PQC_ENCRYPTION_FAILED"
 AES_ENCRYPTION_FAILED = "AES_ENCRYPTION_FAILED"
 
-# 🔒 Decryption Errors
+# Decryption Errors
 RSA_DECRYPTION_FAILED = "RSA_DECRYPTION_FAILED"
 PQC_DECRYPTION_FAILED = "PQC_DECRYPTION_FAILED"
 AES_DECRYPTION_FAILED = "AES_DECRYPTION_FAILED"
 
-# 🔒 Database Errors
+# Database Errors
 DATABASE_CONNECTION_FAILED = "DATABASE_CONNECTION_FAILED"
 DATABASE_QUERY_FAILED = "DATABASE_QUERY_FAILED"
 
-# 🔒 Internal Server Error
+# Internal Server Error
 INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
 
-# 🔒 Not Found
+# Not Found
 RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND"
 
-# 🔒 Benchmark Errors
+# Benchmark Errors
 BENCHMARK_FAILED = "BENCHMARK_FAILED"
 
-# ✅ Success Codes (Optional future expansion)
+# Success Codes (Optional future expansion)
 TRANSACTION_ENCRYPTED_SUCCESSFULLY = "TRANSACTION_ENCRYPTED_SUCCESSFULLY"
 TRANSACTION_DECRYPTED_SUCCESSFULLY = "TRANSACTION_DECRYPTED_SUCCESSFULLY"

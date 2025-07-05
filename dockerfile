@@ -48,6 +48,8 @@ RUN pip install --upgrade pip setuptools wheel && \
 # Copy application code
 COPY . .
 
+COPY static ./static
+
 # Expose port
 EXPOSE 8000
 

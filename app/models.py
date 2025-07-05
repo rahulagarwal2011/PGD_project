@@ -23,3 +23,11 @@ class Transaction(BaseModel):
     merch_lat: float
     merch_long: float
     is_fraud: int
+
+class UserRegister(BaseModel):
+    username: str
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
