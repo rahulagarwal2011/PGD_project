@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PQC Transaction Platform</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+  <h2>PQC Transaction Platform</h2>
+  <p>Welcome, {{ user }} <button id="logout" onclick="logout()">Logout</button></p>
+
+  <div>
+    <button onclick="showTab('load')">Load Transactions</button>
+    <button onclick="showTab('session_benchmarks')">Session Benchmarks</button>
+    <button onclick="showTab('live_benchmarks')">Live Benchmarks</button>
+  </div>
+
+  <!-- Tab 1: Load transactions -->
+  <div id="load" class="tab tab-active">
+    <h3>Single Transaction</h3>
+    <input type="text" id="singleData" placeholder="Enter dummy data as JSON string" />
+    <button onclick="pushSingle()">Push Single Transaction</button>
+
+    <h3>Bulk Transaction</h3>
+    <input type="file" id="bulkFile" accept=".csv,.json" />
+    <button onclick="pushBulk()">Push Bulk Transactions</button>
+  </div>
+
+  <!-- Tab 2: Session Benchmarks -->
+  <div id="session_benchmarks" class="tab">
+    <h3>Session Benchmarks</h3>
+    <button onclick="fetchSessionBenchmarks()">Show Session Results</button>
+    <table id="sessionBenchmarkTable">
+      <tr><th>ID</th><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Throughput</th><th>Error Rate</th><th>Encryption Time</th><th>Timestamp</th></tr>
+    </table>
+  </div>
+
+  <!-- Tab 3: Live Benchmarks -->
+  <div id="live_benchmarks" class="tab">
+    <h3>Live Benchmarks</h3>
+    <button onclick="fetchLiveBenchmarks()">Show Live Metrics</button>
+    <table id="liveBenchmarkTable">
+      <tr><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Throughput</th><th>Error Rate</th></tr>
+    </table>
+  </div>
+
+  <!-- ✅ External JS -->
+  <script src="/secure-script"></script>
+
+  <p id="status"></p>
+  <div id="bulkLog" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; margin-top: 10px;"></div>
+
+</body>
+</html>

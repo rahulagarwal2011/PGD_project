@@ -13,7 +13,7 @@ def init_db():
     conn = sqlite3.connect("creditcard.db")
     cursor = conn.cursor()
 
-    # Create secure_transactions table if not exists
+    # Create secure_transactions table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS secure_transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,15 +26,24 @@ def init_db():
     )
     """)
 
-    # Create benchmarks table if not exists
+    # Create benchmarks table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS benchmarks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT,
-        latency REAL
+        latency REAL,
+        stddev REAL,
+        min_latency REAL,
+        max_latency REAL,
+        throughput REAL,
+        error_rate REAL,
+        encryption_time REAL,
+        algorithm TEXT, -- 'RSA' or 'PQC'
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
-    
+
+    # Create users table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

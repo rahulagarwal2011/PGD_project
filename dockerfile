@@ -38,12 +38,23 @@ RUN python -c "import oqs; print(dir(oqs))"
 # Set workdir
 WORKDIR /app
 
+COPY app/templates ./app/templates
+
 # Copy requirements first for cache optimization
 COPY requirements.txt .
 
 # Install Python dependencies (no oqs here)
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt
+
+
+# Install node for obfuscation
+RUN apt-get update && apt-get install -y nodejs npm
+RUN npm install -g javascript-obfuscator
+
+# Obfuscate scripts.js during build
+COPY app/secure_js/scripts.js app/secure_js/scripts.js
+RUN javascript-obfuscator app/secure_js/scripts.js --output app/secure_js/scripts.obfuscated.js
 
 # Copy application code
 COPY . .

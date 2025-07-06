@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    input { display: block; margin: 10px 0; }
+    button { margin-right: 10px; }
+    #status { color: red; }
+  </style>
+</head>
+<body>
+  <h2>PQC Transaction Platform Login</h2>
+
+  <input type="text" id="username" placeholder="Username" />
+  <input type="password" id="password" placeholder="Password" />
+
+  <button onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
+
+  <p id="status"></p>
+
+  <script>
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const statusEl = document.getElementById("status");
+      statusEl.textContent = "";
+
+      if (!username || !password) {
+        statusEl.textContent = "Username and password cannot be empty.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("password", password);
+
+      const res = await fetch("/login", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.redirected) {
+        window.location.href = res.url; // Redirected to /main after successful login
+      } else {
+        statusEl.textContent = "Login failed: Invalid username or password";
+      }
+    }
+
+    async function register() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const statusEl = document.getElementById("status");
+      statusEl.textContent = "";
+
+      if (!username || !password) {
+        statusEl.textContent = "Username and password cannot be empty.";
+        return;
+      }
+
+      const res = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (res.ok) {
+        statusEl.style.color = "green";
+        statusEl.textContent = "Registered successfully. You can now login.";
+      } else {
+        const data = await res.json();
+        statusEl.textContent = "Registration failed: " + data.detail;
+      }
+    }
+  </script>
+</body>
+</html>
