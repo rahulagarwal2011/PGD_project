@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from app.models import Transaction, UserLogin, UserRegister
-from app.crypto import pqc_kem_encrypt, generate_rsa_keys, rsa_hybrid_encrypt
+from app.crypto import pqc_kem_encrypt, generate_rsa_keys, rsa_hybrid_encrypt , encrypt_record
 from app.database import get_db
 from app.benchmarks import record_benchmark
 from app.utils import hash_password, verify_password
@@ -10,6 +10,10 @@ from app.metrics import Benchmark, rsa_benchmark, pqc_benchmark
 import json, sqlite3, time, math, io, logging, pandas as pd, statistics
 from concurrent.futures import ProcessPoolExecutor
 import asyncio
+
+
+executor = ProcessPoolExecutor()
+router = APIRouter()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("uvicorn")
@@ -25,6 +29,48 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+# def encrypt_record(record):
+#     import json, time
+#     from app.crypto import pqc_kem_encrypt, generate_rsa_keys, rsa_hybrid_encrypt
+#     from app.models import Transaction
+
+#     result = {
+#         "success": False,
+#         "data": None,
+#         "rsa_time": 0,
+#         "pqc_time": 0,
+#         "error": False
+#     }
+
+#     try:
+#         record_clean = {k: record[k] for k in Transaction.__annotations__.keys() if k in record}
+#         data = json.dumps(record_clean).encode()
+
+#         rsa_private_key, rsa_public_key = generate_rsa_keys()
+#         start_rsa = time.time()
+#         rsa_encrypted_key, rsa_ciphertext = rsa_hybrid_encrypt(data, rsa_public_key)
+#         rsa_time = (time.time() - start_rsa) * 1000
+
+#         start_pqc = time.time()
+#         pqc_public_key, oqs_ciphertext, aes_ciphertext = pqc_kem_encrypt(data)
+#         pqc_time = (time.time() - start_pqc) * 1000
+
+#         result["success"] = True
+#         result["rsa_time"] = rsa_time
+#         result["pqc_time"] = pqc_time
+#         result["data"] = (
+#             json.dumps(record_clean),
+#             rsa_encrypted_key.hex(),
+#             rsa_ciphertext.hex(),
+#             pqc_public_key.hex(),
+#             oqs_ciphertext.hex(),
+#             aes_ciphertext.hex()
+#         )
+#     except Exception:
+#         result["error"] = True
+
+#     return result
+
 
 @router.post("/register")
 async def register(user: UserRegister, db: sqlite3.Connection = Depends(get_db)):
@@ -163,10 +209,22 @@ async def push_bulk(
     file: UploadFile = File(None),
     json_batch: list = Body(None)
 ):
+    import math, io, time, json
+    import pandas as pd
+    from concurrent.futures import ProcessPoolExecutor
+    from app.crypto import encrypt_record
+    from app.models import Transaction
+    from app.metrics import Benchmark, rsa_benchmark, pqc_benchmark
+    from app.benchmarks import record_benchmark
+    from app.database import get_db
+
     BATCH_SIZE = 50000
+    MAX_WORKERS = 4
+
     session_bm_rsa = Benchmark()
     session_bm_pqc = Benchmark()
 
+    # Load records from CSV or JSON
     if file:
         content = await file.read()
         filename = file.filename.lower()
@@ -178,9 +236,7 @@ async def push_bulk(
             delimiter = ',' if sample.count(',') > sample.count(';') else ';'
             df = pd.read_csv(io.StringIO(content.decode()), delimiter=delimiter)
 
-            # Drop unnamed index columns like 'Unnamed: 0'
             df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
-
             expected_fields = set(Transaction.__annotations__.keys())
             csv_fields = set(df.columns)
 
@@ -203,83 +259,44 @@ async def push_bulk(
     num_batches = math.ceil(total_rows / BATCH_SIZE)
     total_success, total_fail = 0, 0
 
-    from app.metrics import rsa_benchmark, pqc_benchmark  # <-- Ensure global benchmark objects used
+    # Function to run encryption concurrently
+    async def process_batch_concurrent(batch):
+        insert_data = []
+        loop = asyncio.get_event_loop()
+        with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = [loop.run_in_executor(executor, encrypt_record, record) for record in batch]
+            results = await asyncio.gather(*futures)
 
-    def encrypt_record(record):
-        import json, time, traceback
-        from app.crypto import pqc_kem_encrypt, generate_rsa_keys, rsa_hybrid_encrypt
+        nonlocal total_success, total_fail
+        for result in results:
+            if result["success"]:
+                insert_data.append(result["data"])
+                rsa_benchmark.record_latency(result["rsa_time"])
+                pqc_benchmark.record_latency(result["pqc_time"])
+                session_bm_rsa.record_latency(result["rsa_time"])
+                session_bm_pqc.record_latency(result["pqc_time"])
+                total_success += 1
+            else:
+                total_fail += 1
 
-        result = {"success": False, "data": None}
-        try:
-            record_clean = {k: record[k] for k in Transaction.__annotations__.keys() if k in record}
-            data = json.dumps(record_clean).encode()
-        except Exception as e:
-            logger.error(f"[Serialization Error] {e}")
-            traceback.print_exc()
-            return result
+        return insert_data
 
-        try:
-            rsa_private_key, rsa_public_key = generate_rsa_keys()
-            start_rsa = time.time()
-            rsa_encrypted_key, rsa_ciphertext = rsa_hybrid_encrypt(data, rsa_public_key)
-            rsa_time = (time.time() - start_rsa) * 1000
-            rsa_benchmark.record_latency(rsa_time)
-            session_bm_rsa.record_latency(rsa_time)
-        except Exception as e:
-            logger.error(f"[RSA ERROR] {e}")
-            rsa_benchmark.record_error()
-            session_bm_rsa.record_error()
-            traceback.print_exc()
-            return result
-
-        try:
-            start_pqc = time.time()
-            pqc_public_key, oqs_ciphertext, aes_ciphertext = pqc_kem_encrypt(data)
-            pqc_time = (time.time() - start_pqc) * 1000
-            pqc_benchmark.record_latency(pqc_time)
-            session_bm_pqc.record_latency(pqc_time)
-        except Exception as e:
-            logger.error(f"[PQC ERROR] {e}")
-            pqc_benchmark.record_error()
-            session_bm_pqc.record_error()
-            traceback.print_exc()
-            return result
-
-        result["success"] = True
-        result["data"] = (
-            json.dumps(record_clean),
-            rsa_encrypted_key.hex(),
-            rsa_ciphertext.hex(),
-            pqc_public_key.hex(),
-            oqs_ciphertext.hex(),
-            aes_ciphertext.hex()
-        )
-        return result
-
+    # Prepare database
     cursor = db.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
 
+    # Process all batches
     for b in range(num_batches):
         batch_records = records[b * BATCH_SIZE: (b + 1) * BATCH_SIZE]
         logger.info(f"Processing batch {b + 1}/{num_batches} with {len(batch_records)} records...")
 
-        insert_data = []
         start_time = time.perf_counter()
-
-        for idx, record in enumerate(batch_records, start=1):
-            result = encrypt_record(record)
-            if result["success"]:
-                insert_data.append(result["data"])
-                total_success += 1
-            else:
-                logger.error(f"Encryption failed at row {idx}")
-                total_fail += 1
-
+        insert_data = await process_batch_concurrent(batch_records)
         duration = time.perf_counter() - start_time
 
         if insert_data:
-            cursor.executemany("""
+            await asyncio.to_thread(cursor.executemany, """
                 INSERT INTO secure_transactions 
                 (transaction_json, rsa_encrypted_key, rsa_ciphertext, pqc_public_key, oqs_ciphertext, aes_ciphertext)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -287,6 +304,11 @@ async def push_bulk(
             db.commit()
             logger.info(f"Batch {b + 1} inserted {len(insert_data)} records in {duration:.2f}s.")
 
+        # # Save session metrics after each batch
+        # session_bm_rsa.save()
+        # session_bm_pqc.save()
+
+    # Final session snapshot
     for bm, algo in [(session_bm_rsa, "RSA"), (session_bm_pqc, "PQC")]:
         summary = bm.summary()
         record_benchmark(

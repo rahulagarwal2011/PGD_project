@@ -105,3 +105,45 @@ def pqc_kem_decrypt(oqs_ciphertext, secret_key, aes_ciphertext):
 
     plaintext = decryptor.update(ciphertext) + decryptor.finalize()
     return plaintext    
+
+def encrypt_record(record):
+    import json, time
+    from app.crypto import pqc_kem_encrypt, generate_rsa_keys, rsa_hybrid_encrypt
+    from app.models import Transaction
+
+    result = {
+        "success": False,
+        "data": None,
+        "rsa_time": 0,
+        "pqc_time": 0,
+        "error": False
+    }
+
+    try:
+        record_clean = {k: record[k] for k in Transaction.__annotations__.keys() if k in record}
+        data = json.dumps(record_clean).encode()
+
+        rsa_private_key, rsa_public_key = generate_rsa_keys()
+        start_rsa = time.time()
+        rsa_encrypted_key, rsa_ciphertext = rsa_hybrid_encrypt(data, rsa_public_key)
+        rsa_time = (time.time() - start_rsa) * 1000
+
+        start_pqc = time.time()
+        pqc_public_key, oqs_ciphertext, aes_ciphertext = pqc_kem_encrypt(data)
+        pqc_time = (time.time() - start_pqc) * 1000
+
+        result["success"] = True
+        result["rsa_time"] = rsa_time
+        result["pqc_time"] = pqc_time
+        result["data"] = (
+            json.dumps(record_clean),
+            rsa_encrypted_key.hex(),
+            rsa_ciphertext.hex(),
+            pqc_public_key.hex(),
+            oqs_ciphertext.hex(),
+            aes_ciphertext.hex()
+        )
+    except Exception:
+        result["error"] = True
+
+    return result
