@@ -1,24 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
+  <meta charset="UTF-8">
+  <title>Quantum Login</title>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    input { display: block; margin: 10px 0; }
-    button { margin-right: 10px; }
-    #status { color: red; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .login-container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px #00ffe7, 0 0 30px #00e1ff inset;
+      width: 320px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #111827;
+      border: 1px solid #00ffff;
+      color: #00ffff;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      box-shadow: 0 0 10px #00ffff;
+      background-color: #0d1b2a;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    button {
+      width: 48%;
+      padding: 10px;
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: #00bcd4;
+      box-shadow: 0 0 10px #00ffff;
+    }
+
+    #status {
+      margin-top: 15px;
+      color: #ff6b6b;
+      font-size: 14px;
+    }
+
+    ::placeholder {
+      color: #00ffff99;
+    }
   </style>
 </head>
 <body>
-  <h2>PQC Transaction Platform Login</h2>
-
-  <input type="text" id="username" placeholder="Username" />
-  <input type="password" id="password" placeholder="Password" />
-
-  <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
-
-  <p id="status"></p>
+  <div class="login-container">
+    <h2>🔐 Quantum Vault Access</h2>
+    <input type="text" id="username" placeholder="🧑 Username" />
+    <input type="password" id="password" placeholder="🔒 Password" />
+    <div class="button-group">
+      <button onclick="login()">Login</button>
+      <button onclick="register()">Register</button>
+    </div>
+    <p id="status"></p>
+  </div>
 
   <script>
     async function login() {
@@ -42,9 +126,9 @@
       });
 
       if (res.redirected) {
-        window.location.href = res.url; 
+        window.location.href = res.url;
       } else {
-        statusEl.textContent = "Login failed: Invalid username or password";
+        statusEl.textContent = "Login failed: Invalid credentials.";
       }
     }
 
@@ -66,8 +150,8 @@
       });
 
       if (res.ok) {
-        statusEl.style.color = "green";
-        statusEl.textContent = "Registered successfully. You can now login.";
+        statusEl.style.color = "lightgreen";
+        statusEl.textContent = "Registered successfully!";
       } else {
         const data = await res.json();
         statusEl.textContent = "Registration failed: " + data.detail;

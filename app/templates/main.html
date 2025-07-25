@@ -1,54 +1,328 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PQC Transaction Platform</title>
+  <title>Quantum PQC Portal</title>
   <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle, #10131a, #15192b);
+      background-size: 400% 400%;
+      animation: bgPulse 20s ease infinite;
+      color: #E0E0E0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    @keyframes bgPulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 2.5em;
+      color: #F72585;
+      text-shadow: 0 0 12px #F72585;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      color: #6FFFE9;
+      margin-top: 30px;
+      border-bottom: 1px solid #2DE4F7;
+      padding-bottom: 5px;
+    }
+
+    button {
+      background: linear-gradient(to right, #8E2DE2, #4A00E0);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #4A00E0;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #8E2DE2;
+    }
+
+    .tab {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.6s ease-in-out;
+    }
+
+    .tab-active {
+      display: block;
+      opacity: 1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background-color: rgba(24, 26, 42, 0.85);
+      border-radius: 8px;
+      box-shadow: 0 0 10px #4A00E0;
+    }
+
+    th {
+      background: linear-gradient(to right, #8E2DE2, #4A00E0);
+      color: #6FFFE9;
+      text-transform: uppercase;
+      font-weight: bold;
+      padding: 10px;
+      border: none;
+    }
+
+    td {
+      color: #E0E0E0;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #1c1c1c;
+      color: #6FFFE9;
+      border: 1px solid #2DE4F7;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    ::placeholder {
+      color: #6FFFE966;
+    }
+
+    #bulkLog {
+      background: rgba(0, 255, 255, 0.05);
+      border: 1px solid #2DE4F7;
+      padding: 10px;
+      color: #6FFFE9;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      box-shadow: 0 0 8px #4A00E0;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #status.show {
+      opacity: 1;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .welcome {
+      font-size: 1em;
+      color: #F1F1F1;
+    }
+
+    .center-buttons {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
 
-  <h2>PQC Transaction Platform</h2>
-  <p>Welcome, {{ user }} <button id="logout" onclick="logout()">Logout</button></p>
-
-  <div>
-    <button onclick="showTab('load')">Load Transactions</button>
-    <button onclick="showTab('session_benchmarks')">Session Benchmarks</button>
-    <button onclick="showTab('live_benchmarks')">Live Benchmarks</button>
+  <div class="header-bar">
+    <h2>🧠 Quantum Encryption Dashboard</h2>
+    <p class="welcome">Welcome, {{ user }} <button onclick="logout()">Logout</button></p>
   </div>
 
+  <div class="center-buttons">
+    <button onclick="showTab('load')">📤 Load Transactions</button>
+    <button onclick="showTab('session_benchmarks')">📊 Session Benchmarks</button>
+    <button onclick="showTab('live_benchmarks')">📈 Live Benchmarks</button>
+  </div>
 
   <div id="load" class="tab tab-active">
-    <h3>Single Transaction</h3>
-    <input type="text" id="singleData" placeholder="Enter dummy data as JSON string" />
-    <button onclick="pushSingle()">Push Single Transaction</button>
+    <h3>🔹 Single Transaction</h3>
+    <input type="text" id="singleData" placeholder='{"name": "Alice", "amount": 1000, ...}' />
+    <button onclick="pushSingle()">Push Single</button>
 
-    <h3>Bulk Transaction</h3>
+    <h3>🔹 Bulk Transaction</h3>
     <input type="file" id="bulkFile" accept=".csv,.json" />
-    <button onclick="pushBulk()">Push Bulk Transactions</button>
+    <button onclick="pushBulk()">Push Bulk</button>
+
+    <!-- ✅ Status Message Element -->
+    <p id="status"></p>
   </div>
 
-  <!-- Tab 2: Session Benchmarks -->
   <div id="session_benchmarks" class="tab">
-    <h3>Session Benchmarks</h3>
-    <button onclick="fetchSessionBenchmarks()">Show Session Results</button>
+    <h3>📊 Session Benchmarks</h3>
+    <button onclick="fetchSessionBenchmarks()">Refresh</button>
     <table id="sessionBenchmarkTable">
-      <tr><th>ID</th><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Throughput</th><th>Error Rate</th><th>Encryption Time</th><th>Timestamp</th></tr>
+      <tr>
+        <th>ID</th><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th>
+        <th>Max</th><th>Throughput</th><th>Error Rate</th><th>Enc Time</th><th>Timestamp</th>
+      </tr>
     </table>
   </div>
 
-  <!-- Tab 3: Live Benchmarks -->
   <div id="live_benchmarks" class="tab">
-    <h3>Live Benchmarks</h3>
-    <button onclick="fetchLiveBenchmarks()">Show Live Metrics</button>
+    <h3>📈 Live Benchmarks</h3>
+    <button onclick="fetchLiveBenchmarks()">Refresh</button>
     <table id="liveBenchmarkTable">
-      <tr><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Throughput</th><th>Error Rate</th></tr>
+      <tr>
+        <th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th>
+        <th>Max</th><th>Throughput</th><th>Error Rate</th>
+      </tr>
     </table>
   </div>
 
+  <div id="bulkLog"></div>
 
   <script src="/secure-script"></script>
+  <script>
+    function fadeStatus(message, color = "#00ffcc") {
+      const status = document.getElementById("status");
+      status.textContent = message;
+      status.style.color = color;
+      status.classList.add("show");
 
-  <p id="status"></p>
-  <div id="bulkLog" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; margin-top: 10px;"></div>
+      setTimeout(() => {
+        status.classList.remove("show");
+      }, 3000); // Fade out after 3s
+    }
 
+    async function pushSingle() {
+      const dataInput = document.getElementById("singleData").value;
+      let data;
+      try {
+        data = JSON.parse(dataInput);
+      } catch {
+        fadeStatus("Invalid JSON format.", "orange");
+        return;
+      }
+
+      const res = await fetch("/encrypt-transaction/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        fadeStatus("✅ 1 transaction pushed successfully!", "lightgreen");
+      } else {
+        const result = await res.text();
+        fadeStatus("❌ Push failed: " + result, "red");
+      }
+    }
+
+    async function pushBulk() {
+      const file = document.getElementById("bulkFile").files[0];
+      const logEl = document.getElementById("bulkLog");
+
+      logEl.innerHTML = "";
+      if (!file) {
+        fadeStatus("Please select a file.", "orange");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/pushBulk", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        const processed = result.success ?? 0;
+        const failed = result.fail ?? 0;
+        fadeStatus(`✅ Bulk load complete. Processed: ${processed}, Failed: ${failed}.`, "lightgreen");
+      } else {
+        const err = await res.text();
+        fadeStatus(`❌ Bulk load failed: ${err}`, "red");
+      }
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
+      document.getElementById(tabId).classList.add('tab-active');
+    }
+
+    async function fetchSessionBenchmarks() {
+      const res = await fetch("/benchmarks/sessions");
+      const data = await res.json();
+
+      const table = document.getElementById("sessionBenchmarkTable");
+      table.innerHTML = "<tr><th>ID</th><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Throughput</th><th>Error Rate</th><th>Enc Time</th><th>Timestamp</th></tr>";
+
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${row.algorithm}</td>
+          <td>${row.latency.toFixed(2)}</td>
+          <td>${row.stddev.toFixed(2)}</td>
+          <td>${row.min_latency.toFixed(2)}</td>
+          <td>${row.max_latency.toFixed(2)}</td>
+          <td>${row.throughput.toFixed(2)}</td>
+          <td>${row.error_rate.toFixed(2)}</td>
+          <td>${row.encryption_time.toFixed(2)}</td>
+          <td>${row.timestamp}</td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    async function fetchLiveBenchmarks() {
+      const res = await fetch("/benchmarks/live");
+      const data = await res.json();
+
+      const table = document.getElementById("liveBenchmarkTable");
+      table.innerHTML = "<tr><th>Algorithm</th><th>Avg Latency</th><th>Std Dev</th><th>Min</th><th>Max</th><th>Throughput</th><th>Error Rate</th></tr>";
+
+      Object.entries(data).forEach(([algo, metrics]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${algo}</td>
+          <td>${metrics.average_latency.toFixed(2)}</td>
+          <td>${metrics.stddev_latency.toFixed(2)}</td>
+          <td>${metrics.min_latency.toFixed(2)}</td>
+          <td>${metrics.max_latency.toFixed(2)}</td>
+          <td>${metrics.throughput.toFixed(2)}</td>
+          <td>${metrics.error_rate.toFixed(2)}</td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    function logout() {
+      document.cookie = "user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      window.location.href = "/logout";
+    }
+  </script>
 </body>
 </html>
