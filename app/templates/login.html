@@ -42,7 +42,7 @@
       });
 
       if (res.redirected) {
-        window.location.href = res.url; // Redirected to /main after successful login
+        window.location.href = res.url; 
       } else {
         statusEl.textContent = "Login failed: Invalid username or password";
       }

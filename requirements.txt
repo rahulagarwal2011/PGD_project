@@ -13,4 +13,9 @@ sqlalchemy
 scikit-learn
 pandas
 numpy
-
+openpyxl
+structlog
+aiosqlite
+orjson
+memory-profiler
+tenacity

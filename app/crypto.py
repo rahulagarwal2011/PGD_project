@@ -5,16 +5,16 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
-# ✅ Derive 256-bit AES key from shared secret using SHA256
+
 def derive_aes_key(shared_secret):
     digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
     digest.update(shared_secret)
     return digest.finalize()
 def rsa_hybrid_encrypt(plaintext, public_key):
-    # Generate random AES key
-    aes_key = os.urandom(32)  # 256-bit AES key
 
-    # Encrypt AES key with RSA public key
+    aes_key = os.urandom(32)  
+
+
     encrypted_aes_key = public_key.encrypt(
         aes_key,
         padding.OAEP(
@@ -24,7 +24,7 @@ def rsa_hybrid_encrypt(plaintext, public_key):
         )
     )
 
-    # Encrypt plaintext with AES key
+
     iv = os.urandom(12)
     encryptor = Cipher(
         algorithms.AES(aes_key),
@@ -33,9 +33,9 @@ def rsa_hybrid_encrypt(plaintext, public_key):
     ).encryptor()
     ciphertext = encryptor.update(plaintext) + encryptor.finalize()
 
-    # Return RSA-encrypted AES key + AES ciphertext
+
     return encrypted_aes_key, iv + encryptor.tag + ciphertext
-# ✅ AES-GCM encryption with random 12-byte IV
+
 def aes_encrypt(key, plaintext):
     iv = os.urandom(12)
     encryptor = Cipher(
@@ -46,7 +46,7 @@ def aes_encrypt(key, plaintext):
     ciphertext = encryptor.update(plaintext) + encryptor.finalize()
     return iv + encryptor.tag + ciphertext
 
-# ✅ PQC KEM Encryption using Kyber512
+
 def pqc_kem_encrypt(plaintext):
     with oqs.KeyEncapsulation("Kyber512") as kem:
         public_key = kem.generate_keypair()
@@ -55,13 +55,13 @@ def pqc_kem_encrypt(plaintext):
     aes_ciphertext = aes_encrypt(aes_key, plaintext)
     return public_key, oqs_ciphertext, aes_ciphertext
 
-# ✅ RSA 2048-bit key generation
+
 def generate_rsa_keys():
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public_key = private_key.public_key()
     return private_key, public_key
 
-# ✅ RSA Encryption using OAEP padding
+
 def rsa_encrypt(data: bytes, public_key):
     return public_key.encrypt(
         data,

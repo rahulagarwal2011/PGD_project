@@ -1,6 +1,6 @@
 import sqlite3
 
-# Database connection dependency
+
 def get_db():
     conn = sqlite3.connect("creditcard.db", check_same_thread=False)
     try:
@@ -8,12 +8,12 @@ def get_db():
     finally:
         conn.close()
 
-# Initialize DB schema (run once)
+
 def init_db():
     conn = sqlite3.connect("creditcard.db")
     cursor = conn.cursor()
 
-    # Create secure_transactions table
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS secure_transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +26,7 @@ def init_db():
     )
     """)
 
-    # Create benchmarks table
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS benchmarks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +43,7 @@ def init_db():
     )
     """)
 
-    # Create users table
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

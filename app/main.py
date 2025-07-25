@@ -12,40 +12,40 @@ from app.routes import router
 from app.database import init_db
 from app.exceptions import validation_exception_handler
 
-# ✅ Initialize DB tables at app startup
+
 init_db()
 
-# ✅ Initialize FastAPI app
+
 app = FastAPI(
     title="PQC Transaction Encryption API",
     description="Secure transactions using PQC and RSA",
     version="1.0.0"
 )
 
-# ✅ Mount static files
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ✅ Initialize Jinja2 templates directory
+
 templates = Jinja2Templates(directory="app/templates")
 
-# ✅ Include API routes
+
 app.include_router(router)
 
-# ✅ Root health check route
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to PQC Transaction Encryption API"}
 
-# ✅ Global exception handler for validation errors with precise error messages
+
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 @app.on_event("startup")
-@repeat_every(seconds=3600)  # every hour
+@repeat_every(seconds=3600)  
 def persist_global_benchmarks() -> None:
     print("[Periodic Task] Persisting global benchmarks to DB...")
     db = next(get_db())
 
-    # Persist RSA
+
     rsa_summary = rsa_benchmark.summary()
     record_benchmark(
         db,
@@ -56,11 +56,11 @@ def persist_global_benchmarks() -> None:
         max_latency=rsa_summary["max_latency"],
         throughput=rsa_summary["throughput"],
         error_rate=rsa_summary["error_rate"],
-        encryption_time=0,  # Adjust if you measure it here
+        encryption_time=0, 
         algorithm="RSA"
     )
 
-    # Persist PQC
+
     pqc_summary = pqc_benchmark.summary()
     record_benchmark(
         db,

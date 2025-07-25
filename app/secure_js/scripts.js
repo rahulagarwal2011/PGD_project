@@ -10,7 +10,7 @@ async function pushSingle() {
   try {
     data = JSON.parse(dataInput);
   } catch (e) {
-    statusEl.textContent = "❌ Invalid JSON format.";
+    statusEl.textContent = "Invalid JSON format.";
     return;
   }
 
@@ -21,10 +21,10 @@ async function pushSingle() {
   });
 
   if (res.ok) {
-    statusEl.textContent = "✅ 1 transaction pushed successfully!";
+    statusEl.textContent = "1 transaction pushed successfully!";
   } else {
     const result = await res.text();
-    statusEl.textContent = "❌ Push failed: " + result;
+    statusEl.textContent = "Push failed: " + result;
   }
 }
 
@@ -51,10 +51,13 @@ async function pushBulk() {
 
   if (res.ok) {
     const result = await res.json();
-    statusEl.textContent = `✅ Bulk load complete. Processed: ${result.total_records}.`;
+    const processed = result.success ?? 0;
+    const failed = result.fail ?? 0;
+    statusEl.textContent = `Bulk load complete. Processed: ${processed}, Failed: ${failed}.`;
+
   } else {
     const err = await res.text();
-    statusEl.textContent = `❌ Bulk load failed: ${err}`;
+    statusEl.textContent = `Bulk load failed: ${err}`;
   }
 }
 

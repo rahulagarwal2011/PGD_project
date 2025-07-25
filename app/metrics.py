@@ -37,6 +37,6 @@ def reset(self):
     self.errors = 0
     self.start_time = time.time()
 
-# ✅ Global instances
+
 rsa_benchmark = Benchmark()
 pqc_benchmark = Benchmark()
